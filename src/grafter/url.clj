@@ -1,7 +1,6 @@
 (ns grafter.url
   "Utilities and protocols for building and handling URLs and URIs."
   (:require [clojure.string :as str])
-
   (:import [java.net URL URI]))
 
 (defprotocol IURIable
@@ -254,7 +253,7 @@
   ^URI [{:keys [scheme host port path-segments query-params url-fragment]}]
   (let [path (build-path path-segments)
         query (build-query-params query-params)]
-    (URI. scheme nil host port path (not-empty query) url-fragment)))
+    (URI. scheme nil host (or port -1) path (not-empty query) url-fragment)))
 
 (defrecord GrafterURL [scheme host port path-segments query-params url-fragment]
   IURL
@@ -334,7 +333,7 @@
   (let [uri (if (instance? URI uri-str)
               uri-str
               (URI. uri-str))
-        scheme (scheme uri)
+        scheme (or (scheme uri) "http")
         host (host uri)
         port (or (port uri) -1)
         fragment (url-fragment uri)
