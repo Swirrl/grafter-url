@@ -330,13 +330,15 @@
   URI contains any reserved characters, they should be encoded
   correctly in the input string."
   [uri-str]
-  (let [uri (if (instance? URI uri-str)
-              uri-str
-              (URI. uri-str))
-        scheme (or (scheme uri) "http")
-        host (host uri)
-        port (or (port uri) -1)
-        fragment (url-fragment uri)
-        qparams (query-params uri)
-        path-segments (path-segments uri)]
-    (->GrafterURL scheme host port path-segments qparams fragment)))
+  (if (satisfies? IURL uri-str)
+    uri-str
+    (let [uri (if (instance? URI uri-str)
+                uri-str
+                (URI. uri-str))
+          scheme (or (scheme uri) "http")
+          host (host uri)
+          port (or (port uri) -1)
+          fragment (url-fragment uri)
+          qparams (query-params uri)
+          path-segments (path-segments uri)]
+      (->GrafterURL scheme host port path-segments qparams fragment))))
