@@ -40,10 +40,10 @@
   (url-fragment [url]
     "Get the URL fragment from the URL.")
 
-  (append-path-segments [url segments]
+  (append-path-segments* [url segments]
     "Append new path segments to the URL path.")
 
-  (set-path-segments [url segments]
+  (set-path-segments* [url segments]
     "Set the path segments to those supplied.")
 
   (path-segments [url]
@@ -60,7 +60,8 @@
     "Return the query parameters for the URL as an ordered sequence of
     key/value tuples."))
 
-(defn- parse-path [path-str]
+(defn parse-path [path-str]
+  "Given a URI string return the path segments."
   (when-not (#{nil ""} path-str)
     (remove #{""} (str/split path-str #"/"))))
 
@@ -129,18 +130,18 @@
   (url-fragment [url]
     (.getFragment url))
 
-  (append-path-segments [url segments]
+  (append-path-segments* [url segments]
     (let [new-path (join-paths url segments)]
       (URI. (scheme url) (.getUserInfo url) (host url) (or (port url) -1) new-path (.getQuery url) (.getFragment url))))
 
-  (set-path-segments [url segments]
+  (set-path-segments* [url segments]
     (URI. (scheme url) (.getUserInfo url) (host url) (or (port url) -1) (build-path segments) (.getQuery url) (.getFragment url)))
 
   (path-segments [url]
     (parse-path (.getPath url)))
 
   (append-query-param [url key value]
-    (let [query-params (build-query-params (concat (query-params url) [[key value]]))]
+    (let [query-params (build-query-params (concat (query-params url) [[(name key) value]]))]
       (URI. (scheme url) (.getUserInfo url) (host url) (or (port url) -1) (.getPath url) query-params (.getFragment url))))
 
   (set-query-params [url hash-map]
@@ -206,11 +207,11 @@
   (url-fragment [url]
     (.getRef url))
 
-  (append-path-segments [url segments]
-    (set-path-segments url
+  (append-path-segments* [url segments]
+    (set-path-segments* url
                        (parse-path (join-paths url segments))))
 
-  (set-path-segments [url segments]
+  (set-path-segments* [url segments]
     (let [path (build-path segments)
           file (if-let [qp (query-params url)]
                  (str path "?" qp)
@@ -224,7 +225,7 @@
     (parse-path (.getPath url)))
 
   (append-query-param [url key value]
-    (let [query-params (build-query-params (concat (query-params url) [[key value]]))]
+    (let [query-params (build-query-params (concat (query-params url) [[(name key) value]]))]
       (if-let [fragment (.getRef url)]
         (URL. (scheme url) (host url) (or (port url) -1) (str (.getPath url) "?" query-params "#" fragment))
         (URL. (scheme url) (host url) (or (port url) -1) (str (.getPath url) "?" query-params)))))
@@ -282,10 +283,10 @@
   (url-fragment [this]
     (:url-fragment this))
 
-  (append-path-segments [url segments]
+  (append-path-segments* [url segments]
     (update-in url [:path-segments] concat segments))
 
-  (set-path-segments [url segments]
+  (set-path-segments* [url segments]
     (assoc url :path-segments segments))
 
   (path-segments [url]
@@ -295,7 +296,7 @@
     (:query-params url))
 
   (append-query-param [url key value]
-    (update-in url [:query-params] concat [[key value]]))
+    (update-in url [:query-params] concat [[(name key) value]]))
 
   (set-query-params [url hash-map]
     (let [kvs (build-sorted-params hash-map)]
@@ -321,6 +322,12 @@
        query-params
        flatten
        (apply hash-map)))
+
+(defn append-path-segments [url & segments]
+  (apply append-path-segments* url segments))
+
+(defn set-path-segments [url & segments]
+  (apply set-path-segments* url segments))
 
 (defmethod print-method GrafterURL [v ^java.io.Writer w]
   (.write w (str "#<GrafterURL " v ">")))
