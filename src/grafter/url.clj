@@ -7,6 +7,20 @@
   (->java-uri [url]
     "Convert into a java.net.URI"))
 
+(extend-protocol IURIable
+
+  String
+  (->java-uri [uri]
+    (URI. uri))
+
+  URI
+  (->java-uri [uri]
+    uri)
+
+  URL
+  (->java-uri [url]
+    (.toURI url)))
+
 (defn ->java-url
   "Convert a URI into a java.net.URL."
   [url]
@@ -324,13 +338,26 @@
        (apply hash-map)))
 
 (defn append-path-segments [url & segments]
-  (apply append-path-segments* url segments))
+  (append-path-segments* url segments))
 
 (defn set-path-segments [url & segments]
-  (apply set-path-segments* url segments))
+  (set-path-segments* url segments))
 
 (defmethod print-method GrafterURL [v ^java.io.Writer w]
   (.write w (str "#<GrafterURL " v ">")))
+
+(defn ->grafter-url
+  "Convert any IURIable into a Grafter URL object."
+  [uri-str]
+
+  (let [uri (->java-uri uri-str)
+        scheme (or (scheme uri) "http")
+        host (host uri)
+        port (or (port uri) -1)
+        fragment (url-fragment uri)
+        qparams (query-params uri)
+        path-segments (path-segments uri)]
+      (->GrafterURL scheme host port path-segments qparams fragment)))
 
 (defn ->url
   "Parses a given string into a GrafterURL record.  If the represented
@@ -339,13 +366,4 @@
   [uri-str]
   (if (satisfies? IURL uri-str)
     uri-str
-    (let [uri (if (instance? URI uri-str)
-                uri-str
-                (URI. uri-str))
-          scheme (or (scheme uri) "http")
-          host (host uri)
-          port (or (port uri) -1)
-          fragment (url-fragment uri)
-          qparams (query-params uri)
-          path-segments (path-segments uri)]
-      (->GrafterURL scheme host port path-segments qparams fragment))))
+    (->grafter-url uri-str)))
