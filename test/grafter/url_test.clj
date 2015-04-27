@@ -51,5 +51,13 @@
          ["foo" "bar"] path-segments set-path-segments
          {"foo" "bar" "baz" "fop"} query-params-map set-query-params
 
+
          ;; TODO test query-params elsewhere as its not dual to set-query-params
-         )))
+         )
+
+    (is (= "http://foo.com/?foo=http://foobar.com/"
+           (str (append-query-param (->url "http://foo.com/") :foo (->url "http://foobar.com/"))))
+
+        "Serialises URL object parameters properly")
+
+    ))

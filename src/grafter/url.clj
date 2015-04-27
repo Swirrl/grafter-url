@@ -141,7 +141,7 @@
     (parse-path (.getPath url)))
 
   (append-query-param [url key value]
-    (let [query-params (build-query-params (concat (query-params url) [[(name key) value]]))]
+    (let [query-params (build-query-params (concat (query-params url) [[(name key) (str value)]]))]
       (URI. (scheme url) (.getUserInfo url) (host url) (or (port url) -1) (.getPath url) query-params (.getFragment url))))
 
   (set-query-params [url hash-map]
@@ -225,7 +225,7 @@
     (parse-path (.getPath url)))
 
   (append-query-param [url key value]
-    (let [query-params (build-query-params (concat (query-params url) [[(name key) value]]))]
+    (let [query-params (build-query-params (concat (query-params url) [[(name key) (str value)]]))]
       (if-let [fragment (.getRef url)]
         (URL. (scheme url) (host url) (or (port url) -1) (str (.getPath url) "?" query-params "#" fragment))
         (URL. (scheme url) (host url) (or (port url) -1) (str (.getPath url) "?" query-params)))))
@@ -296,7 +296,7 @@
     (:query-params url))
 
   (append-query-param [url key value]
-    (update-in url [:query-params] concat [[(name key) value]]))
+    (update-in url [:query-params] concat [[(name key) (str value)]]))
 
   (set-query-params [url hash-map]
     (let [kvs (build-sorted-params hash-map)]
