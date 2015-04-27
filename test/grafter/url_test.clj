@@ -9,8 +9,8 @@
       (set-port 9000)
       (set-scheme "https")
       (set-url-fragment "11-things-you-can-do-with-yak-hair")
-      (set-path-segments ["articles" "yaks"])
-      (append-path-segments ["hair" "shaving"])
+      (set-path-segments "articles" "yaks")
+      (append-path-segments "hair" "shaving")
       (set-query-params {"article-id" 1})
       str))
 
@@ -48,7 +48,7 @@
          nil port set-port
          9000 port set-port
          "foo" url-fragment set-url-fragment
-         ["foo" "bar"] path-segments set-path-segments
+         ["foo" "bar"] path-segments set-path-segments*
          {"foo" "bar" "baz" "fop"} query-params-map set-query-params
 
 
