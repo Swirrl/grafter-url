@@ -60,8 +60,10 @@
 (deftest to-grafter-url-protocol-test
   (testing "extends String"
     (let [grafter-url (->grafter-url "http://www.tokyo-3.com:777/ayanami?geofront=retracted")]
-     (are [expected actual] (= expected actual)
-          777 (port grafter-url)
-          "www.tokyo-3.com" (host grafter-url)
-          "http" (scheme grafter-url)
-          ["ayanami"] (path-segments grafter-url)))))
+      (are [expected actual] (= expected actual)
+           777 (port grafter-url)
+           "www.tokyo-3.com" (host grafter-url)
+           "http" (scheme grafter-url)
+           ["ayanami"] (path-segments grafter-url))
+
+      (is (= grafter-url (->grafter-url grafter-url))))))

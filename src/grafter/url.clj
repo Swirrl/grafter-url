@@ -326,7 +326,11 @@
 
   Object
   (toString [this]
-    (.toString (->java-uri this))))
+    (.toString (->java-uri this)))
+
+  ToGrafterURL
+  (->grafter-url [this]
+    this))
 
 (defn query-params-map
   "Returns a map of query parameters from a URL query string.  If
