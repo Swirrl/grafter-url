@@ -7,6 +7,10 @@
   (->java-uri [url]
     "Convert into a java.net.URI"))
 
+(defprotocol ToGrafterURL
+  "Convert any IURIable into a Grafter URL object."
+  (->grafter-url [uri-str]))
+
 (extend-protocol IURIable
 
   String
@@ -346,18 +350,19 @@
 (defmethod print-method GrafterURL [v ^java.io.Writer w]
   (.write w (str "#<GrafterURL " v ">")))
 
-(defn ->grafter-url
-  "Convert any IURIable into a Grafter URL object."
-  [uri-str]
 
-  (let [uri (->java-uri uri-str)
-        scheme (or (scheme uri) "http")
-        host (host uri)
-        port (or (port uri) -1)
-        fragment (url-fragment uri)
-        qparams (query-params uri)
-        path-segments (path-segments uri)]
-      (->GrafterURL scheme host port path-segments qparams fragment)))
+(extend-protocol ToGrafterURL
+
+  String
+  (->grafter-url [uri-str]
+    (let [uri (->java-uri uri-str)
+          scheme (or (scheme uri) "http")
+          host (host uri)
+          port (or (port uri) -1)
+          fragment (url-fragment uri)
+          qparams (query-params uri)
+          path-segments (path-segments uri)]
+      (->GrafterURL scheme host port path-segments qparams fragment))))
 
 (defn ->url
   "Parses a given string into a GrafterURL record.  If the represented
