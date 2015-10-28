@@ -62,6 +62,11 @@
                                     (->url "http://foobar.com/"))))
         "Serialises URL object parameters properly")))
 
+(deftest append-query-params-test
+  (is (= (URL. "http://foo.com/?a=a&b=b&c=c")
+         (-> (URL. "http://foo.com/")
+             (append-query-params ["a" "a"] ["b" "b"] ["c" "c"])))))
+
 (deftest to-grafter-url-protocol-test
   (testing "extends String"
     (let [grafter-url (->grafter-url "http://www.tokyo-3.com:777/ayanami?geofront=retracted")]

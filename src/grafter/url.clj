@@ -351,6 +351,14 @@
 (defn set-path-segments [url & segments]
   (set-path-segments* url segments))
 
+(defn append-query-params
+  "Appends multiple query parameters to the query string in the specified
+  order.  Expects query parameters to be in key-value vector pairs."
+  [u & kvs]
+  (reduce (fn [u [k v]]
+            (append-query-param u k v))
+          u kvs))
+
 (defmethod print-method GrafterURL [v ^java.io.Writer w]
   (.write w (str "#<GrafterURL " v ">")))
 
