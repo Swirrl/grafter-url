@@ -14,6 +14,11 @@
       (set-query-params {"article-id" 1})
       str))
 
+(deftest set-query-params-test
+  (is (= (URL. "http://foo.com/") (-> (URL. "http://foo.com/?foo=bar")
+                                      (set-query-params {})))
+      "Setting an empty hash of parameters removes query params completely"))
+
 (deftest test-url-builders
   (let [in "http://foobar.com/blah/blah/blah"
         expected (URL. "https://yak-hair.com:90/articles/yaks/shaving?article-id=1#11-things-to-do-with-yak-hair")]

@@ -250,7 +250,7 @@
 
   (set-query-params [url hash-map]
     (URL. (scheme url) (host url) (or (port url) -1)
-          (if hash-map
+          (if-not (empty? hash-map)
             (let [file (str (.getPath url) "?" (build-sorted-query-params hash-map))]
               (if-let [fragment (url-fragment url)]
                 (str file "#" fragment)
