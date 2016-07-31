@@ -62,10 +62,15 @@
                                     (->url "http://foobar.com/"))))
         "Serialises URL object parameters properly")))
 
-(deftest append-query-params-test
+(deftest append-query-params*-test
+  (testing "URL encoding of query parameters"
+    (is (= (URL. "http://foobar.com/?%2526=ampersand&%3D=equals")
+           (-> (URL. "http://foobar.com/")
+               (append-query-params* "&" "ampersand" "=" "equals")))))
+
   (is (= (URL. "http://foo.com/?a=a&b=b&c=c")
          (-> (URL. "http://foo.com/")
-             (append-query-params ["a" "a"] ["b" "b"] ["c" "c"])))))
+             (append-query-params* "a" "a" "b" "b" "c" "c")))))
 
 (deftest to-grafter-url-protocol-test
   (testing "extends String"

@@ -1,7 +1,7 @@
 (ns grafter.url
   "Utilities and protocols for building and handling URLs and URIs."
   (:require [clojure.string :as str])
-  (:import [java.net URL URI URLEncoder]))
+  (:import [java.net URL URI URLEncoder URLDecoder]))
 
 (defprotocol IURIable
   (->java-uri [url]
@@ -117,6 +117,9 @@
        build-sorted-params
        build-query-params))
 
+(defn- decode-qparams [[k v]]
+  [(URLDecoder/decode k) (URLDecoder/decode v)])
+
 (extend-type URI
 
   IURL
@@ -167,7 +170,7 @@
       (URI. (scheme url) (.getUserInfo url) (host url) (or (port url) -1) (.getPath url) params (.getFragment url))))
 
   (query-params [url]
-    (parse-query-params (.getQuery url)))
+    (map decode-qparams (parse-query-params (.getQuery url))))
 
   IURIable
   (->java-uri [url]
@@ -258,7 +261,7 @@
             (url-end-path-fragment url))))
 
   (query-params [url]
-    (parse-query-params (.getQuery url))))
+    (map decode-qparams (parse-query-params (.getQuery url)))))
 
 (defn- append-to [url key values]
   (update-in url [:path-segments] concat [[key values]]))
@@ -311,7 +314,7 @@
     (:path-segments url))
 
   (query-params [url]
-    (:query-params url))
+    (map decode-qparams (:query-params url)))
 
   (append-query-param [url key value]
     (update-in url [:query-params] concat [[(name key) (str value)]]))
@@ -352,12 +355,20 @@
   (set-path-segments* url segments))
 
 (defn append-query-params
-  "Appends multiple query parameters to the query string in the specified
-  order.  Expects query parameters to be in key-value vector pairs."
+  "Appends multiple query parameters to the query string in the
+  specified order.  Expects query parameters to be in key-value vector
+  pairs.  See also append-query-params*"
   [u & kvs]
   (reduce (fn [u [k v]]
             (append-query-param u k v))
           u kvs))
+
+(defn append-query-params*
+  "Appends multiple query parameters to the query string in the
+  specified order.  Unlike append-query-params this variant does not
+  require parameters to be specified as [key value] tuples."
+  [u & kvs]
+  (apply append-query-params u (partition 2 kvs)))
 
 (defmethod print-method GrafterURL [v ^java.io.Writer w]
   (.write w (str "#<GrafterURL " v ">")))
