@@ -1,7 +1,7 @@
 (ns grafter.url
   "Utilities and protocols for building and handling URLs and URIs."
   (:require [clojure.string :as str])
-  (:import [java.net URL URI]))
+  (:import [java.net URL URI URLEncoder]))
 
 (defprotocol IURIable
   (->java-uri [url]
@@ -103,7 +103,7 @@
 
 (defn- build-query-params [kvs]
   (->> kvs
-       (map (fn [[k v]] (str k "=" v)))
+       (map (fn [[k v]] (str (URLEncoder/encode k) "=" (URLEncoder/encode v))))
        (str/join "&")))
 
 (defn- build-sorted-params [hash-map]
