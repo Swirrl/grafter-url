@@ -1,4 +1,4 @@
-(defproject grafter/url "0.2.2-SNAPSHOT"
+(defproject grafter/url "0.2.2"
   :description "A standalone library to build and manipulate URLs and
   their component parts."
   :url "http://grafter.org/"
