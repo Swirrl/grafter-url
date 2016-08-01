@@ -103,7 +103,7 @@
 
 (defn- build-query-params [kvs]
   (->> kvs
-       (map (fn [[k v]] (str (URLEncoder/encode k) "=" (URLEncoder/encode v))))
+       (map (fn [[k v]] (str (URLEncoder/encode (str k)) "=" (URLEncoder/encode (str v)))))
        (str/join "&")))
 
 (defn- build-sorted-params [hash-map]
@@ -118,7 +118,7 @@
        build-query-params))
 
 (defn- decode-qparams [[k v]]
-  [(URLDecoder/decode k) (URLDecoder/decode v)])
+  [(URLDecoder/decode (str k)) (URLDecoder/decode (str v))])
 
 (extend-type URI
 
@@ -235,7 +235,7 @@
   (set-path-segments* [url segments]
     (let [path (build-path segments)
           file (if-let [qp (query-params url)]
-                 (str path "?" qp)
+                 (str path "?" (build-query-params qp))
                  path)
           file-frag (if-let [fragment (url-fragment url)]
                       (str file "#" fragment)

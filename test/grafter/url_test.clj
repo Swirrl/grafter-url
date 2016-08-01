@@ -56,7 +56,7 @@
          ["foo" "bar"] path-segments set-path-segments*
          {"foo" "bar" "baz" "fop"} query-params-map set-query-params)
 
-    (is (= "http://foo.com/?foo=http://foobar.com/"
+    (is (= "http://foo.com/?foo=http%253A%252F%252Ffoobar.com%252F"
            (str (append-query-param (->url "http://foo.com/")
                                     :foo
                                     (->url "http://foobar.com/"))))
@@ -64,13 +64,23 @@
 
 (deftest append-query-params*-test
   (testing "URL encoding of query parameters"
-    (is (= (URL. "http://foobar.com/?%2526=ampersand&%3D=equals")
+    (is (= (URL. "http://foobar.com/?%26=ampersand&%3D=equals")
            (-> (URL. "http://foobar.com/")
                (append-query-params* "&" "ampersand" "=" "equals")))))
 
   (is (= (URL. "http://foo.com/?a=a&b=b&c=c")
          (-> (URL. "http://foo.com/")
              (append-query-params* "a" "a" "b" "b" "c" "c")))))
+
+(deftest append-query-params-test
+  (testing "URL encoding of query parameters"
+    (is (= (URL. "http://foobar.com/?%26=ampersand&%3D=equals")
+           (-> (URL. "http://foobar.com/")
+               (append-query-params ["&" "ampersand"] ["=" "equals"])))))
+
+  (is (= (URL. "http://foo.com/?a=a&b=b&c=c")
+         (-> (URL. "http://foo.com/")
+             (append-query-params ["a" "a"] ["b" "b"] ["c" "c"])))))
 
 (deftest to-grafter-url-protocol-test
   (testing "extends String"
