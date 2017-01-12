@@ -1,7 +1,7 @@
 (ns grafter.url-test
   (:require [clojure.test :refer :all]
             [grafter.url :refer :all])
-  (:import [java.net URL URI]))
+  (:import [java.net URI URL URLEncoder]))
 
 (defn build-url [base]
   (-> base
@@ -92,3 +92,37 @@
            ["ayanami"] (path-segments grafter-url))
 
       (is (= grafter-url (->grafter-url grafter-url))))))
+
+(deftest encoding-params
+  (let [params [["http%3A%2F%2Ffoo" "http%3A%2F%2Fbar"]]]
+    (is (= params
+           (-> (URI. "http://x.com")
+               (set-query-params params)
+               query-params)))
+
+    (is (= params
+           (-> (URI. "http://x.com")
+               (set-path-segments "")
+               (set-path-segments "")
+               (set-query-params params)
+               query-params)))))
+
+(defn enc
+  "URI encode string or URL/URI."
+  [uri]
+  (URLEncoder/encode (str uri) "UTF-8"))
+
+(deftest canonicalise-test
+  (testing "Sorts url query parameters alphabetically by their keys"
+    (is (= (URI. "http://a.com/?a=a&b=b&c=c") (canonicalise "http://a.com/?c=c&a=a&b=b")))
+
+    (testing "Encodings round trip properly"
+      (let [uncanonical-url (URI. (str "http://mydomain.com/slice?dataset=" (enc "http://dataset/?foo=bar")
+                                       "&" (enc "http://c") "=" (enc "http://c/val")
+                                       "&" (enc "http://a") "=" (enc "http://a/val")
+                                       "&" (enc "http://b") "=" (enc "http://b/val")))
+            expected-uri (URI. (str "http://mydomain.com/slice?dataset=" (enc "http://dataset/?foo=bar")
+                                    "&" (enc "http://a") "=" (enc "http://a/val")
+                                    "&" (enc "http://b") "=" (enc "http://b/val")
+                                    "&" (enc "http://c") "=" (enc "http://c/val")))]
+        (is (= expected-uri (canonicalise uncanonical-url)))))))

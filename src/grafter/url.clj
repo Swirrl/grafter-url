@@ -373,7 +373,6 @@
 (defmethod print-method GrafterURL [v ^java.io.Writer w]
   (.write w (str "#<GrafterURL " v ">")))
 
-
 (extend-protocol ToGrafterURL
 
   String
@@ -395,3 +394,17 @@
   (if (satisfies? IURL uri-str)
     uri-str
     (->grafter-url uri-str)))
+
+(defn canonicalise
+  "This function sorts a java.net.URI's query parameters
+  alphabetically by their key to canonicalise a URI suitable for an ID
+  or key.  It returns a java.net.URI."
+  [url]
+  ;; Note the implementation is a bit weird as it switches to
+  ;; java.net.URL to avoid the encoding bugs in java.net.URI which
+  ;; lead to it both double encoding %'s and not encoding other
+  ;; characters.
+  (let [url (->java-url url)
+        p (->> url
+               query-params-map)]
+    (->java-uri (set-query-params url p))))
