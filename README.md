@@ -18,6 +18,14 @@ grafter-url defines an `IURL` protocol which is extended to both
 ;; => #<GrafterURL https://www.example.org/path/segments?query=parameter#fragment>
 ````
 
+## java.net.URI Warning
+
+Note
+[there are bugs](https://blog.stackhunter.com/2014/03/31/encode-special-characters-java-net-uri/)
+in java.net.URI related to double encoding, and also not encoding
+certain query parameters.  Some of these bugs may be inherited by the
+functions in this API.
+
 ## TODO
 
 - Incremental Construction
