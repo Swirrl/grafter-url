@@ -120,6 +120,30 @@
 (defn- decode-qparams [[k v]]
   [(URLDecoder/decode (str k)) (URLDecoder/decode (str v))])
 
+(defn bodge-java-uri-qparams
+  "java.net.URI has several deep bugs with encoding URI parts.  Its
+  constructor partially encodes query parameters (incorrectly) which
+  results in problems when accessing them again.
+
+  This function uses reflection to set the query params to
+  your (encoded) string that bypass the erroneous encoding in URI's
+  constructor.
+
+  Yes, this is a nasty bodge that may potentially break on future java
+  versions, but it's the only way to get correct encoding behaviour.
+
+  For more details see this blog post:
+
+  https://blog.stackhunter.com/2014/03/31/encode-special-characters-java-net-uri/"
+  [uri qparams]
+  (doto (.getDeclaredField URI "query")
+    (.setAccessible true)
+    (.set uri qparams))
+  (doto (.getDeclaredField URI "string")
+    (.setAccessible true)
+    (.set uri nil))
+  uri)
+
 (extend-type URI
 
   IURL
@@ -166,11 +190,12 @@
       (URI. (scheme url) (.getUserInfo url) (host url) (or (port url) -1) (.getPath url) query-params (.getFragment url))))
 
   (set-query-params [url hash-map]
-    (let [params (build-sorted-query-params hash-map)]
-      (URI. (scheme url) (.getUserInfo url) (host url) (or (port url) -1) (.getPath url) params (.getFragment url))))
+    (let [params (build-sorted-query-params hash-map)
+          uri (URI. (scheme url) (.getUserInfo url) (host url) (or (port url) -1) (.getPath url) params (.getFragment url))]
+      (bodge-java-uri-qparams uri params)))
 
   (query-params [url]
-    (map decode-qparams (parse-query-params (.getQuery url))))
+    (map decode-qparams (parse-query-params (.getRawQuery url))))
 
   IURIable
   (->java-uri [url]

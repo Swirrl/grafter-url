@@ -94,18 +94,29 @@
       (is (= grafter-url (->grafter-url grafter-url))))))
 
 (deftest encoding-params
-  (let [params [["http%3A%2F%2Ffoo" "http%3A%2F%2Fbar"]]]
-    (is (= params
-           (-> (URI. "http://x.com")
-               (set-query-params params)
-               query-params)))
+  (testing "Double encoding"
+    (let [params [["http%3A%2F%2Ffoo" "http%3A%2F%2Fbar"]]]
+      (is (= params
+             (-> (URI. "http://x.com")
+                 (set-query-params params)
+                 query-params)))
 
-    (is (= params
-           (-> (URI. "http://x.com")
-               (set-path-segments "")
-               (set-path-segments "")
-               (set-query-params params)
-               query-params)))))
+      (is (= params
+             (-> (URI. "http://x.com")
+                 (set-path-segments "")
+                 (set-path-segments "")
+                 (set-query-params params)
+                 query-params)))))
+
+  (testing "Plus (+) decoding"
+    (let [uri-with-plus (get (query-params-map (java.net.URI. "http://opendatacommunities.org/slice?plus=http%3A%2F%2Fopendatacommunities.org%2Fdef%2Fconcept%2Fgeneral-concepts%2Fbyage%2F16%2B"))
+                             "plus")]
+      (is (URI. uri-with-plus)
+          "Is valid URI")
+
+      (is (= "http://opendatacommunities.org/def/concept/general-concepts/byage/16+"
+             uri-with-plus)
+          "Is expected value"))))
 
 (defn enc
   "URI encode string or URL/URI."
