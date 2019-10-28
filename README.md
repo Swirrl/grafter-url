@@ -1,5 +1,7 @@
 # grafter-url
 
+*DEPRECATED* 
+
 A standalone Clojure library to help generate URLs and access their
 individual components.
 
